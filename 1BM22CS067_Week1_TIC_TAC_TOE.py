@@ -14,9 +14,9 @@ def spaceFree(pos):
     return board[pos] == ' '
 
 def checkWin():
-    win_conditions = [(1, 2, 3), (4, 5, 6), (7, 8, 9),  # Horizontal
-                      (1, 4, 7), (2, 5, 8), (3, 6, 9),  # Vertical
-                      (1, 5, 9), (3, 5, 7)]             # Diagonal
+    win_conditions = [(1, 2, 3), (4, 5, 6), (7, 8, 9),
+                      (1, 4, 7), (2, 5, 8), (3, 6, 9),
+                      (1, 5, 9), (3, 5, 7)]
     for cond in win_conditions:
         if board[cond[0]] == board[cond[1]] == board[cond[2]] != ' ':
             return True
@@ -95,4 +95,3 @@ while not checkWin() and not checkDraw():
     compMove()
     if not checkWin() and not checkDraw():
         playerMove()
-        
