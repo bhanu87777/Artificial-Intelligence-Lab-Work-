@@ -5,6 +5,15 @@ import copy
 import time
 import queue
 
+# Clause class to represent each clause
+class Clause:
+    def __init__(self, literals):
+        self.literals = set(literals)
+    
+    def __repr__(self):
+        return f"Clause({self.literals})"
+
+# Standardization function remains unchanged
 def standardization(sentence, variable_map, counter):
     sentence_list = list(sentence)
     for i in range(len(sentence_list)):
@@ -56,22 +65,26 @@ def substitute(expr, theta):
         return expr
 
 def resolve_clauses(clause1, clause2):
-    for literal1 in clause1:
-        for literal2 in clause2:
+    for literal1 in clause1.literals:
+        for literal2 in clause2.literals:
+            print(f"Trying to unify {literal1} and ~{literal2}")  # Print attempt to unify
             theta = unify(literal1, negate(literal2), {})
             if theta is not None:
-                new_clause = []
-                for literal in clause1:
+                print(f"Unified {literal1} and ~{literal2} with theta: {theta}")  # Print successful unification
+                new_clause = set()
+                for literal in clause1.literals:
                     new_literal = substitute(literal, theta)
                     if new_literal not in new_clause and new_literal != negate(literal2):
-                        new_clause.append(new_literal)
-                for literal in clause2:
+                        new_clause.add(new_literal)
+                for literal in clause2.literals:
                     new_literal = substitute(literal, theta)
                     if new_literal not in new_clause and new_literal != literal2:
-                        new_clause.append(new_literal)
+                        new_clause.add(new_literal)
                 if not new_clause:
+                    print("Empty clause produced, returning 'NIL'")  # Print if an empty clause is produced
                     return 'NIL'
-                return new_clause
+                print(f"New clause produced: {new_clause}")  # Print the new clause
+                return Clause(new_clause)
     return None
 
 def resolve(kb, query):
@@ -79,41 +92,54 @@ def resolve(kb, query):
     q.put(query)
     processed_clauses = set()
 
+    print("Initial Clauses:")
+    for clause in kb:
+        print(clause)
+
     while not q.empty():
         clause = q.get()
-        clause_tuple = tuple(clause)
+        clause_tuple = tuple(clause.literals)
         if clause_tuple in processed_clauses:
             continue
         processed_clauses.add(clause_tuple)
 
+        print(f"\nResolving with clause: {clause}")
+
         for clause2 in kb:
+            print(f"Trying to resolve with clause from KB: {clause2}")
             resolvent = resolve_clauses(clause, clause2)
             if resolvent == 'NIL':
                 return True
-            if resolvent is not None and tuple(resolvent) not in processed_clauses:
+            if resolvent is not None and tuple(resolvent.literals) not in processed_clauses:
                 q.put(resolvent)
     
     return False
 
 def prove_query(kb, query):
     negated_query = negate(query)
+    print(f"\nNegating query: {query} to {negated_query}")
     
-    if resolve(kb, [negated_query]):
+    # Make sure the query is wrapped as a Clause
+    query_clause = Clause([negated_query])
+    
+    if resolve(kb, query_clause):
         return False
     else:
         return True
 
-kb = {
-    'Likes': {1: [["Likes(John, x)", "~Food(x)"]]},
-    'Food': {1: [["Food(Apple)", "Food(Vegetables)", "Food(Peanuts)"]]},
-    'Eats': {1: [["Eats(Anil, Peanuts)"]]},
-    'Killed': {1: [["~Killed(Anil)"]]}
-}
+# Example KB and Queries
+kb = [
+    Clause(['¬Cat(x)', 'Animal(x)']),
+    Clause(['¬Animal(x)', 'Eats(x,Food)']),
+    Clause(['Cat(Tom)']),
+    Clause(['¬Eats(Tom,Food)'])
+]
 
-queries = ['Likes(John, Peanuts)']
+queries = ['Eats(Tom,Food)']
 
+# Run resolution for each query
 for query in queries:
     if prove_query(kb, query):
-        print(f"Query '{query}' is provable.")
+        print(f"\nThe query '{query}' is proved.")
     else:
-        print(f"Query '{query}' is not provable.")
+        print(f"\nThe query '{query}' is not provable.")
