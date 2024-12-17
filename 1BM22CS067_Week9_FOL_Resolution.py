@@ -5,7 +5,6 @@ import copy
 import time
 import queue
 
-# Clause class to represent each clause
 class Clause:
     def __init__(self, literals):
         self.literals = set(literals)
@@ -13,7 +12,6 @@ class Clause:
     def __repr__(self):
         return f"Clause({self.literals})"
 
-# Standardization function remains unchanged
 def standardization(sentence, variable_map, counter):
     sentence_list = list(sentence)
     for i in range(len(sentence_list)):
@@ -67,10 +65,10 @@ def substitute(expr, theta):
 def resolve_clauses(clause1, clause2):
     for literal1 in clause1.literals:
         for literal2 in clause2.literals:
-            print(f"Trying to unify {literal1} and ~{literal2}")  # Print attempt to unify
+            print(f"Trying to unify {literal1} and ~{literal2}")
             theta = unify(literal1, negate(literal2), {})
             if theta is not None:
-                print(f"Unified {literal1} and ~{literal2} with theta: {theta}")  # Print successful unification
+                print(f"Unified {literal1} and ~{literal2} with theta: {theta}") 
                 new_clause = set()
                 for literal in clause1.literals:
                     new_literal = substitute(literal, theta)
@@ -81,9 +79,9 @@ def resolve_clauses(clause1, clause2):
                     if new_literal not in new_clause and new_literal != literal2:
                         new_clause.add(new_literal)
                 if not new_clause:
-                    print("Empty clause produced, returning 'NIL'")  # Print if an empty clause is produced
+                    print("Empty clause produced, returning 'NIL'") 
                     return 'NIL'
-                print(f"New clause produced: {new_clause}")  # Print the new clause
+                print(f"New clause produced: {new_clause}") 
                 return Clause(new_clause)
     return None
 
@@ -119,7 +117,6 @@ def prove_query(kb, query):
     negated_query = negate(query)
     print(f"\nNegating query: {query} to {negated_query}")
     
-    # Make sure the query is wrapped as a Clause
     query_clause = Clause([negated_query])
     
     if resolve(kb, query_clause):
@@ -127,7 +124,6 @@ def prove_query(kb, query):
     else:
         return True
 
-# Example KB and Queries
 kb = [
     Clause(['¬Cat(x)', 'Animal(x)']),
     Clause(['¬Animal(x)', 'Eats(x,Food)']),
@@ -137,7 +133,6 @@ kb = [
 
 queries = ['Eats(Tom,Food)']
 
-# Run resolution for each query
 for query in queries:
     if prove_query(kb, query):
         print(f"\nThe query '{query}' is proved.")
